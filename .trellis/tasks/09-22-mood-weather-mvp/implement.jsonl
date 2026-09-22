@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "用于实现小程序、API、SQLite、时区与删除/共鸣之间的完整跨层数据流。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "确保扭矩区间、共鸣公式、时间窗口和契约只有一个权威实现。"}
+{"file": ".trellis/tasks/09-22-mood-weather-mvp/research/filing-and-domain.md", "reason": "区分本地开发与 AppID、request 域名、ICP、小程序备案和公安联网备案等发布依赖。"}

@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查保存、撤销、删除、回顾和共鸣在各层是否一致。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查共享枚举、公式、校验和日期逻辑是否被重复实现。"}
+{"file": ".trellis/tasks/09-22-mood-weather-mvp/research/filing-and-domain.md", "reason": "核对部署文档没有把测试环境或现有备案状态误述为可公开发布。"}
