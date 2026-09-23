@@ -1,0 +1,2 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Check miniapp tests, H5 preview and WeChat build expectations."}
+{"file":".trellis/tasks/09-23-miniapp-ui-redesign/asset-prompts.md","reason":"Verify required image names, alpha and asset dependency are reported honestly."}
