@@ -1,0 +1,9 @@
+.agents/
+.codex/
+.trellis/
+AGENTS.md
+node_modules/
+**/dist/
+**/coverage/
+**/unpackage/
+data/

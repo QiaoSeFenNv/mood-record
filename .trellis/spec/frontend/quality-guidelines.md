@@ -49,3 +49,13 @@ Questions to answer:
 <!-- What reviewers should check -->
 
 (To be filled by the team)
+
+### Common Mistake: uni-app plugin export under Node 24
+
+**Symptom**: `uni build -p mp-weixin` fails with `uni is not a function` while loading `vite.config.ts`.
+
+**Cause**: Node 24 can expose the CommonJS package as an object whose callable factory is the nested `default` export.
+
+**Fix**: Resolve either a directly callable export or a callable `default`, validate it at runtime, and return a typed Vite `PluginOption`.
+
+**Prevention**: Keep `pnpm build` in the required quality gate; type-check alone does not execute Vite configuration loading.

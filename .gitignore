@@ -4,6 +4,7 @@ dist/
 build/
 coverage/
 .output/
+unpackage/
 *.tsbuildinfo
 
 # Local configuration and credentials
@@ -21,6 +22,7 @@ coverage/
 *.sqlite3
 *.sqlite3-*
 backups/
+data/
 
 # Local editor, OS and Trellis runtime state
 .vscode/

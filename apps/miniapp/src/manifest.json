@@ -1,0 +1,17 @@
+{
+  "name": "心情晴雨表",
+  "appid": "",
+  "description": "低负担的情绪记录与匿名共鸣",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "touristappid",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "minified": true
+    },
+    "usingComponents": true
+  }
+}

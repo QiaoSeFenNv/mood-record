@@ -1,0 +1,35 @@
+{
+  "name": "mood-record",
+  "version": "0.1.0",
+  "private": true,
+  "description": "心情晴雨表微信小程序与 API",
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22.0.0 <25",
+    "pnpm": ">=10.0.0 <11"
+  },
+  "scripts": {
+    "build": "pnpm build:shared && pnpm --filter @mood-record/api build && pnpm --filter @mood-record/miniapp build:mp-weixin",
+    "build:shared": "pnpm --filter @mood-record/domain build && pnpm --filter @mood-record/contracts build",
+    "dev:api": "pnpm build:shared && pnpm --filter @mood-record/api dev",
+    "dev:miniapp": "pnpm build:shared && pnpm --filter @mood-record/miniapp dev:mp-weixin",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm build:shared && pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.36.0",
+    "@types/node": "24.5.2",
+    "eslint": "9.36.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-vue": "10.4.0",
+    "globals": "16.4.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.44.1",
+    "vitest": "3.2.4",
+    "vue-eslint-parser": "10.2.0"
+  }
+}

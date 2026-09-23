@@ -1,0 +1,24 @@
+{
+  "pages": [
+    { "path": "pages/today/index", "style": { "navigationBarTitleText": "今天" } },
+    { "path": "pages/review/index", "style": { "navigationBarTitleText": "回顾" } },
+    { "path": "pages/me/index", "style": { "navigationBarTitleText": "我的" } },
+    { "path": "pages/dev-login/index", "style": { "navigationBarTitleText": "测试身份" } }
+  ],
+  "globalStyle": {
+    "navigationBarBackgroundColor": "#172b33",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#11252c"
+  },
+  "tabBar": {
+    "color": "#8da6ab",
+    "selectedColor": "#d6f3d8",
+    "backgroundColor": "#172b33",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/today/index", "text": "今天" },
+      { "pagePath": "pages/review/index", "text": "回顾" },
+      { "pagePath": "pages/me/index", "text": "我的" }
+    ]
+  }
+}
