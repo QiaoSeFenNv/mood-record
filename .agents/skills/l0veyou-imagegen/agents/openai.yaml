@@ -1,0 +1,4 @@
+interface:
+  display_name: "l0veyou ImageGen"
+  short_description: "Generate images through l0veyou API"
+  default_prompt: "Generate an image with l0veyou and verify the downloaded result."
