@@ -1,0 +1,6 @@
+# Future release only: do not expose the development identity endpoint.
+# Replace the hostname only after WeChat authentication and release checks pass.
+api.example.invalid {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:3000
+}

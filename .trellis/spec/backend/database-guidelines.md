@@ -105,3 +105,58 @@ await dataSource.transaction(async (manager) => {
   await reverseMutationReceipt(manager, userId, clientMutationId);
 });
 ```
+
+## Scenario: SQLite backup and receipt retention
+
+### 1. Scope / Trigger
+
+- Applies to the single-writer SQLite deployment and mutation receipt cleanup. Backup storage is outside the online database directory and is never read by the API.
+
+### 2. Signatures
+
+- `node deploy/scripts/sqlite-ops-cli.mjs backup --db PATH --backup-dir DIR`
+- `node deploy/scripts/sqlite-ops-cli.mjs verify --db PATH`
+- `node deploy/scripts/sqlite-ops-cli.mjs restore-drill --backup PATH [--temp-root DIR]`
+- `node deploy/scripts/sqlite-ops-cli.mjs cleanup --backup-dir DIR [--dry-run]`
+- `MoodRepository.pruneExpiredReceipts(nowUtc: Date): Promise<number>`
+
+### 3. Contracts
+
+- Backup uses SQLite's online backup API so committed WAL rows are included; validate `integrity_check` and `foreign_key_check` before publishing the file.
+- Restore drills use a disposable directory and never overwrite a running database. A real restore requires deletion-request reconciliation before reconnecting users.
+- Cleanup targets only timestamped `mood-record-*.sqlite3` snapshots, defaults to 29 days, and rejects retention above 30 days. The host must schedule backup and cleanup daily and encrypt/access-restrict backup storage.
+- Receipts expire after 23 hours and the API sweeps on startup and hourly, leaving at most one hour of normal scheduling latency before the 24-hour retention bound. A stopped service cannot enforce this deadline; operations must account for downtime.
+
+### 4. Validation & Error Matrix
+
+- Missing/corrupt SQLite file or foreign-key violation -> backup/verify/restore-drill fails; no snapshot is published.
+- Backup directory inside the live data directory -> backup fails.
+- Unknown CLI flag or retention outside 1..30 days -> fail before cleanup deletes anything.
+- Expired receipt sweep failure -> log a sanitized error; next scheduled sweep retries.
+
+### 5. Good/Base/Bad Cases
+
+- Good: online backup includes a committed but uncheckpointed WAL row and passes a temporary restore drill.
+- Base: dry-run lists matching old snapshots but deletes none.
+- Bad: copying a live `.sqlite3` file without its WAL, or restoring a snapshot that revives privacy-deleted records.
+
+### 6. Tests Required
+
+- `node --test deploy/scripts/sqlite-ops.test.mjs`: WAL content, corruption, foreign keys, retention selection, and CLI flag safety.
+- `receipt-cleanup.service.test.ts`: initial and hourly sweep, shutdown timer cleanup.
+- Deployment drill: one API replica only, persistent local volume, readiness and restart checks; do not claim this passed without Docker.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```text
+copy live.sqlite3 backups/live.sqlite3
+```
+
+#### Correct
+
+```text
+node deploy/scripts/sqlite-ops-cli.mjs backup --db data/mood-record.sqlite3 --backup-dir PRIVATE_BACKUP_DIR
+node deploy/scripts/sqlite-ops-cli.mjs restore-drill --backup SNAPSHOT_PATH
+```

@@ -9,7 +9,8 @@ import { MoodRecordEntity } from '../database/entities/mood-record.entity.js';
 import { MutationReceiptEntity } from '../database/entities/mutation-receipt.entity.js';
 import { UserEntity } from '../database/entities/user.entity.js';
 
-const RECEIPT_TTL_MS = 86_400_000;
+// 留出每小时清理任务的最大调度间隔，避免正常运行时回执超过 24 小时。
+const RECEIPT_TTL_MS = 23 * 60 * 60 * 1000;
 
 export type CreateResult =
   | { state: 'CREATED' | 'REPLAYED'; record: MoodRecordEntity }

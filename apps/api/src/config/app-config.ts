@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  HOST: z.enum(['127.0.0.1', '0.0.0.0']).default('127.0.0.1'),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
   DATABASE_PATH: z.string().min(1).default('../../data/mood-record.sqlite3'),
   ENABLE_DEV_AUTH: z
@@ -13,7 +14,7 @@ const environmentSchema = z.object({
     .transform((value) => value === 'true'),
   JWT_SECRET: z.string().min(32).default('development-only-secret-change-me-00000000'),
   DEV_AUTH_PEPPER: z.string().min(8).default('development-pepper'),
-  CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  CORS_ORIGIN: z.string().default('http://127.0.0.1:5173,http://localhost:5173'),
 });
 
 export type AppEnvironment = z.infer<typeof environmentSchema>;

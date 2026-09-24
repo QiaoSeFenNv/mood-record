@@ -19,7 +19,10 @@ export default tseslint.config(
     ],
   },
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: ['**/*.ts', '**/*.vue'],
+  })),
   ...pluginVue.configs['flat/essential'],
   {
     files: ['**/*.ts', '**/*.vue'],
@@ -43,6 +46,10 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
     },
+  },
+  {
+    files: ['deploy/**/*.mjs'],
+    languageOptions: { globals: globals.node },
   },
   {
     files: ['**/*.vue'],
