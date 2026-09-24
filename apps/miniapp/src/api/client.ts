@@ -14,10 +14,15 @@ import { TimeRange, type MoodBand } from '@mood-record/domain';
 import { useSessionStore } from '../stores/session';
 
 const configuredApiBase: unknown = import.meta.env.VITE_API_BASE_URL;
+let defaultApiBase = 'http://127.0.0.1:3000/v1';
+// #ifdef H5
+// 本地 H5 开发预览走同源 Vite 代理，避免自定义预览端口被 API 的 CORS 白名单拦截。
+if (import.meta.env.DEV) defaultApiBase = '/v1';
+// #endif
 const API_BASE =
   typeof configuredApiBase === 'string' && configuredApiBase.length > 0
     ? configuredApiBase
-    : 'http://127.0.0.1:3000/v1';
+    : defaultApiBase;
 
 export class ApiRequestError extends Error {
   constructor(

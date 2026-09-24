@@ -123,13 +123,13 @@ vitest run --config vitest.config.ts
 ### 3. Contracts
 
 - `apps/miniapp/index.html` is the H5 entry and loads `src/main.ts`; both targets use the same uni-app pages and shared API client.
-- Browser requests use `http://127.0.0.1:3000/v1` by default. The local API permits the loopback H5 origin and binds to loopback by default; never expose development identity publicly.
+- During H5 development, the API client defaults to same-origin `/v1`; `apps/miniapp/vite.config.ts` proxies it to `http://127.0.0.1:3000`. This supports the default `5173` and custom local preview ports such as `62613` without widening the API CORS list. `VITE_API_BASE_URL` remains an explicit override. WeChat builds retain the direct `http://127.0.0.1:3000/v1` development default; never expose development identity publicly.
 - Browser CSV export uses a Blob download; the Mini Program retains `uni.downloadFile` and `uni.openDocument`.
 
 ### 4. Validation & Error Matrix
 
 - Missing H5 entry -> `uni build -p h5` fails to resolve `index.html`.
-- Wrong API CORS origin -> browser preflight fails even when API health returns 200.
+- Direct cross-origin requests from an unlisted custom H5 port -> browser preflight fails even when the API login endpoint returns 201; use the same-origin development proxy.
 - H5 preview success does not prove WeChat slider, storage, vibration, download or tab behavior.
 
 ### 5. Good/Base/Bad Cases
@@ -140,7 +140,7 @@ vitest run --config vitest.config.ts
 
 ### 6. Tests Required
 
-- Run `pnpm build:h5`, `pnpm build`, typecheck, tests, and a local-origin API preflight.
+- Run `pnpm build:h5`, `pnpm build`, typecheck, tests, and a POST to `<preview-origin>/v1/auth/dev/session`; verify the returned session can read `/v1/moods/today` through the same preview origin.
 - Confirm browser layout/interaction visually when a browser surface is available; later repeat in WeChat Developer Tools and on a device.
 
 ### 7. Wrong vs Correct

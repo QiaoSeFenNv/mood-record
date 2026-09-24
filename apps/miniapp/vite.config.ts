@@ -20,6 +20,14 @@ const uniPlugin = resolveUniPlugin(uniPluginPackage);
 
 export default defineConfig({
   plugins: [uniPlugin()],
+  server: {
+    proxy: {
+      '/v1': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+      },
+    },
+  },
   define: {
     __DEV_AUTH_UI__: JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
