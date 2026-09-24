@@ -6,15 +6,15 @@
     { "path": "pages/dev-login/index", "style": { "navigationBarTitleText": "测试身份" } }
   ],
   "globalStyle": {
-    "navigationBarBackgroundColor": "#172b33",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#11252c"
+    "navigationBarBackgroundColor": "#f7fbf5",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f7fbf5"
   },
   "tabBar": {
-    "color": "#8da6ab",
-    "selectedColor": "#d6f3d8",
-    "backgroundColor": "#172b33",
-    "borderStyle": "black",
+    "color": "#587973",
+    "selectedColor": "#236d66",
+    "backgroundColor": "#f7fbf5",
+    "borderStyle": "white",
     "list": [
       { "pagePath": "pages/today/index", "text": "今天" },
       { "pagePath": "pages/review/index", "text": "回顾" },

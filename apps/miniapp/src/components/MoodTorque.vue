@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { moodBandName, torqueToMoodBand } from '@mood-record/domain';
 
-const props = defineProps<{ disabled?: boolean; vibrationEnabled?: boolean }>();
+const props = defineProps<{
+  disabled?: boolean;
+  vibrationEnabled?: boolean;
+  resetToken?: number;
+}>();
 const emit = defineEmits<{
   preview: [torque: number | null];
   commit: [torque: number];
@@ -10,35 +14,65 @@ const emit = defineEmits<{
 
 const current = ref(0);
 const gestureActive = ref(false);
+const hasDraft = ref(false);
+const submitted = ref(false);
 const bandName = computed(() => moodBandName(torqueToMoodBand(current.value)));
-const fill = computed(() => `${(current.value + 100) / 2}%`);
+
+watch(
+  () => props.resetToken,
+  () => {
+    current.value = 0;
+    gestureActive.value = false;
+    hasDraft.value = false;
+    submitted.value = false;
+  },
+);
 
 function changing(event: { detail: { value: number } }): void {
   if (props.disabled) return;
   gestureActive.value = true;
+  hasDraft.value = true;
+  submitted.value = false;
   current.value = Math.round(event.detail.value);
   emit('preview', current.value);
 }
 
 function complete(event: { detail: { value: number } }): void {
   if (props.disabled) return;
-  current.value = Math.round(event.detail.value);
-  emit('preview', null);
   if (!gestureActive.value) return;
+  current.value = Math.round(event.detail.value);
+  emit('preview', current.value);
   gestureActive.value = false;
   if (props.vibrationEnabled && current.value < -20) {
     uni.vibrateShort({ type: 'light', fail: () => undefined });
   }
+}
+
+function confirm(): void {
+  if (props.disabled || !hasDraft.value || submitted.value) return;
+  submitted.value = true;
   emit('commit', current.value);
+}
+
+function discard(): void {
+  if (props.disabled) return;
+  hasDraft.value = false;
+  submitted.value = false;
+  gestureActive.value = false;
+  current.value = 0;
+  emit('preview', null);
 }
 </script>
 
 <template>
-  <view class="torque card">
-    <view class="torque-title">记录此刻</view>
-    <view class="torque-value">{{ current > 0 ? '+' : '' }}{{ current }} · {{ bandName }}</view>
-    <view class="track" :class="{ heavy: current < -20 }">
-      <view class="track-fill" :style="{ width: fill }" />
+  <view class="torque">
+    <view class="torque-head">
+      <text class="torque-title">此刻的心情</text>
+      <text class="torque-value">{{
+        hasDraft ? `${current > 0 ? '+' : ''}${current} · ${bandName}` : '轻轻滑动，看看此刻'
+      }}</text>
+    </view>
+    <view class="track">
       <slider
         class="slider"
         :value="current"
@@ -46,62 +80,86 @@ function complete(event: { detail: { value: number } }): void {
         :max="100"
         :step="1"
         :disabled="disabled"
-        activeColor="transparent"
-        backgroundColor="transparent"
-        block-color="#f0e6c4"
-        :block-size="30"
+        activeColor="#357976"
+        backgroundColor="#d8e6d8"
+        block-color="#fff9e9"
+        :block-size="26"
         @changing="changing"
         @change="complete"
       />
     </view>
     <view class="ends"><text>低落</text><text>平静</text><text>愉快</text></view>
-    <view class="muted">滑动并松手，即保存这次心情。每一段心情都值得被看见。</view>
+    <view class="actions">
+      <button v-if="hasDraft" class="discard" :disabled="!!disabled" @tap="discard">放弃</button>
+      <button
+        class="action confirm"
+        :disabled="!!disabled || !hasDraft || submitted"
+        @tap="confirm"
+      >
+        记下这一刻
+      </button>
+    </view>
   </view>
 </template>
 
 <style scoped>
 .torque {
-  text-align: center;
+  padding: 24rpx 32rpx 32rpx;
+  background: #f7fbf5;
+}
+.torque-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12rpx;
+  flex-wrap: wrap;
 }
 .torque-title {
-  font-size: 34rpx;
-  font-weight: 600;
+  font-size: 31rpx;
+  font-weight: 700;
+  color: #173f3c;
 }
 .torque-value {
-  color: #efdcac;
-  font-size: 42rpx;
-  margin: 22rpx 0;
+  color: #336967;
+  font-size: 27rpx;
+  font-variant-numeric: tabular-nums;
 }
 .track {
   position: relative;
-  height: 80rpx;
-  border-radius: 40rpx;
-  background: linear-gradient(90deg, #6173ad, #81baa9 50%, #eacb86);
-  transition: box-shadow 0.2s;
-}
-.track.heavy {
-  box-shadow:
-    inset 18rpx 0 25rpx #263a73,
-    0 0 22rpx #6874b488;
-}
-.track-fill {
-  height: 100%;
-  border-radius: 40rpx;
-  background: #e9e2b240;
-  pointer-events: none;
+  height: 65rpx;
+  margin: 18rpx -12rpx 0;
 }
 .slider {
-  position: absolute;
-  left: -12rpx;
-  right: -12rpx;
-  top: -12rpx;
   margin: 0;
 }
 .ends {
   display: flex;
   justify-content: space-between;
-  color: #b4cac8;
-  font-size: 24rpx;
-  margin: 12rpx 8rpx 28rpx;
+  color: #587973;
+  font-size: 23rpx;
+  margin: 0 8rpx;
+}
+.actions {
+  display: flex;
+  gap: 14rpx;
+  margin-top: 22rpx;
+}
+.actions button {
+  margin: 0;
+  min-height: 82rpx;
+  line-height: 82rpx;
+  font-size: 29rpx;
+}
+.confirm {
+  flex: 1;
+}
+.confirm[disabled] {
+  background: #bdcfc1;
+  color: #50665c;
+}
+.discard {
+  width: 132rpx;
+  background: transparent;
+  color: #496b62;
 }
 </style>

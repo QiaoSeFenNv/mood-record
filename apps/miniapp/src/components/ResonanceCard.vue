@@ -5,7 +5,7 @@ defineProps<{ resonance: Resonance | null; moodName?: string }>();
 </script>
 
 <template>
-  <view v-if="resonance" class="card resonance">
+  <view v-if="resonance" class="resonance">
     <view class="heading">今天 · 此刻共鸣</view>
     <view v-if="resonance.displayCount !== null" class="count">
       约 {{ resonance.displayCount }} 人，也记录了{{ moodName }}
@@ -18,16 +18,18 @@ defineProps<{ resonance: Resonance | null; moodName?: string }>();
 
 <style scoped>
 .resonance {
-  background: linear-gradient(130deg, #31575b, #3c5662);
+  padding: 32rpx;
+  border-top: 1rpx solid #d5e3da;
+  background: #edf5ed;
 }
 .heading {
   font-size: 28rpx;
-  color: #d0e6d8;
+  color: #315e59;
 }
 .count {
   font-size: 38rpx;
   line-height: 1.35;
   margin: 18rpx 0;
-  color: #f2e3b6;
+  color: #173f3c;
 }
 </style>

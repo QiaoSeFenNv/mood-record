@@ -12,12 +12,14 @@
     "build": "pnpm build:shared && pnpm --filter @mood-record/api build && pnpm --filter @mood-record/miniapp build:mp-weixin",
     "build:shared": "pnpm --filter @mood-record/domain build && pnpm --filter @mood-record/contracts build",
     "dev:api": "pnpm build:shared && pnpm --filter @mood-record/api dev",
+    "dev:h5": "pnpm build:shared && pnpm --filter @mood-record/miniapp dev:h5",
     "dev:miniapp": "pnpm build:shared && pnpm --filter @mood-record/miniapp dev:mp-weixin",
+    "build:h5": "pnpm build:shared && pnpm --filter @mood-record/miniapp build:h5",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm build:shared && pnpm -r --if-present test"
+    "test": "pnpm build:shared && pnpm -r --if-present test && node --test deploy/scripts/sqlite-ops.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.36.0",

@@ -21,6 +21,18 @@ const undoId = ref<string | null>(null);
 const pending = ref<{ torque: number; clientMutationId: string } | null>(null);
 const busy = ref(false);
 const errorMessage = ref('');
+const torqueReset = ref(0);
+const todayLabel = ref(formatTodayLabel());
+let refreshGeneration = 0;
+
+function formatTodayLabel(): string {
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  }).format(new Date());
+}
+
 const hasSession = computed(() => !!session.accessToken);
 
 function timezoneOffset(): number {
@@ -29,17 +41,29 @@ function timezoneOffset(): number {
 
 async function refresh(): Promise<void> {
   if (!hasSession.value) return;
+  const generation = ++refreshGeneration;
+  todayLabel.value = formatTodayLabel();
   try {
     const today = await api.today(timezoneOffset());
+    if (generation !== refreshGeneration) return;
     records.value = today.records;
-    if (resonance.value && records.value.length) {
-      resonance.value = await api.resonance(
-        records.value[records.value.length - 1]!.moodBand,
-        timezoneOffset(),
-      );
+    if (selected.value && !records.value.some((record) => record.id === selected.value?.id)) {
+      selected.value = null;
+    }
+    if (records.value.length === 0) {
+      resonance.value = null;
+      savedMoodName.value = '';
+    } else {
+      const latest = records.value[records.value.length - 1]!;
+      resonance.value = null;
+      savedMoodName.value = latest.moodName;
+      const currentResonance = await api.resonance(latest.moodBand, timezoneOffset());
+      if (generation !== refreshGeneration) return;
+      resonance.value = currentResonance;
     }
     errorMessage.value = '';
   } catch (error) {
+    if (generation !== refreshGeneration) return;
     errorMessage.value = error instanceof Error ? error.message : '今天的数据暂时无法读取';
   }
 }
@@ -48,8 +72,15 @@ onShow(() => {
   void refresh();
 });
 onHide(() => {
+  refreshGeneration += 1;
+  records.value = [];
+  selected.value = null;
+  resonance.value = null;
+  savedMoodName.value = '';
   undoId.value = null;
   previewTorque.value = null;
+  pending.value = null;
+  torqueReset.value += 1;
 });
 
 async function commit(torque: number): Promise<void> {
@@ -85,6 +116,8 @@ async function retry(): Promise<void> {
       clientMutationId: pending.value.clientMutationId,
     });
     pending.value = null;
+    previewTorque.value = null;
+    torqueReset.value += 1;
     savedMoodName.value = result.record.moodName;
     resonance.value = result.resonance;
     undoId.value = result.record.id;
@@ -129,30 +162,34 @@ function openDevLogin(): void {
 
 <template>
   <view class="screen">
-    <view class="hero-title">今天，心情在这里生长</view>
-    <view class="muted">不需要解释，也不必给自己打分。</view>
-    <view class="test-pill">测试环境 · {{ session.displayCode || '未登录' }}</view>
+    <view class="heading-row">
+      <view class="date-label">{{ todayLabel }}</view>
+      <view class="test-pill">测试环境 · {{ session.displayCode || '未登录' }}</view>
+    </view>
 
     <template v-if="hasSession">
       <MoodTree
         :records="records"
         :preview-torque="previewTorque"
         :reduced-motion="session.reducedMotion"
+        :plant="session.plant"
+        :companion="session.companion"
       />
       <MoodTorque
         :disabled="busy || !!pending"
+        :reset-token="torqueReset"
         :vibration-enabled="session.vibrationEnabled && !session.reducedMotion"
         @preview="previewTorque = $event"
         @commit="commit"
       />
-      <view v-if="busy" class="muted">正在保存这次心情…</view>
-      <view v-if="errorMessage" class="card error">
+      <view v-if="busy" class="status">正在保存这次心情…</view>
+      <view v-if="errorMessage" class="status error">
         {{ errorMessage }}
         <button v-if="pending" class="action" @tap="retry">重试保存</button>
       </view>
       <ResonanceCard :resonance="resonance" :mood-name="savedMoodName" />
       <DayTimeline :records="records" @select="selected = $event" />
-      <view v-if="selected" class="card">
+      <view v-if="selected" class="selection">
         <view
           >{{ selected.moodName }} · {{ selected.torque > 0 ? '+' : '' }}{{ selected.torque }}</view
         >
@@ -169,21 +206,34 @@ function openDevLogin(): void {
 </template>
 
 <style scoped>
-.hero-title {
-  font-size: 42rpx;
+.heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 26rpx 32rpx 18rpx;
+}
+.date-label {
+  font-size: 29rpx;
   font-weight: 700;
-  margin-bottom: 12rpx;
+  color: #173f3c;
 }
 .test-pill {
   display: inline-block;
-  color: #e8d8a5;
-  background: #465947;
-  padding: 8rpx 18rpx;
-  border-radius: 20rpx;
-  font-size: 22rpx;
-  margin: 22rpx 0;
+  color: #436b64;
+  font-size: 20rpx;
+  text-align: right;
 }
 .error {
-  color: #f2c2c5;
+  color: #9d4148;
+}
+.status,
+.selection {
+  padding: 20rpx 32rpx;
+  background: #f7fbf5;
+  color: #315e59;
+}
+.screen {
+  padding: 0 0 80rpx;
 }
 </style>

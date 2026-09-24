@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-24T15:00:00+08:00",
+  "title": "Design System: 心情晴雨表小程序",
+  "extensions": {
+    "colorMeta": {
+      "meadow-paper": { "role": "neutral", "displayName": "草地纸面", "canonical": "#f7fbf5", "tonalRamp": ["#173f3c", "#2b5b56", "#4d7069", "#72918a", "#99afa8", "#b9c9c1", "#d7e3dc", "#f7fbf5"] },
+      "deep-fern": { "role": "primary", "displayName": "深蕨绿", "canonical": "#173f3c", "tonalRamp": ["#173f3c", "#2d5a54", "#4d7069", "#6d8a81", "#90a79f", "#b0c0b9", "#d1dcd6", "#f7fbf5"] },
+      "calm-teal": { "role": "primary", "displayName": "平静青绿", "canonical": "#2f746e", "tonalRamp": ["#173f3c", "#225d59", "#2f746e", "#4c8c84", "#75a9a0", "#9fc2ba", "#c9ded8", "#edf5ed"] }
+    },
+    "motion": [
+      { "name": "preview-settle", "value": "2s ease-in-out alternate", "purpose": "轻微提示当前预览痕迹；低动效模式停止。" }
+    ],
+    "breakpoints": [{ "name": "wide-h5", "value": "720px" }]
+  },
+  "components": [
+    { "name": "Primary Button", "kind": "button", "refersTo": "button-primary", "description": "显式确认保存一次心情记录。", "html": "<button class=\"ds-button-primary\">记下这一刻</button>", "css": ".ds-button-primary { background:#2f746e; color:#fff; border:0; border-radius:8px; min-height:41px; padding:0 16px; font-weight:600; } .ds-button-primary:focus-visible { outline:2px solid #173f3c; outline-offset:2px; }" },
+    { "name": "Soft Surface", "kind": "card", "refersTo": "surface-soft", "description": "承载共鸣和设置说明的浅色表面。", "html": "<section class=\"ds-surface-soft\">说明内容</section>", "css": ".ds-surface-soft { background:#edf5ed; color:#173f3c; border-radius:8px; padding:16px; }" }
+  ],
+  "narrative": {
+    "northStar": "日光草地上的心情植物",
+    "overview": "在开阔的天空和草地中记录情绪，植物保留痕迹，动物提供陪伴。",
+    "keyCharacteristics": ["原创哑光光栅场景", "浅色草地纸面", "确认后保存"],
+    "rules": [{ "name": "The One Scene Rule", "body": "场景负责气氛，控件区域保持浅色平面。", "section": "colors" }],
+    "dos": ["Do 让值、名称和确认动作同屏可见。"],
+    "donts": ["Don't 把拖动过程直接写成记录。"]
+  }
+}

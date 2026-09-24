@@ -1,219 +1,229 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { MoodRecord } from '@mood-record/contracts';
 import { MoodBand, torqueToMoodBand } from '@mood-record/domain';
+import type { Companion, Plant } from '../stores/session';
 
 const props = defineProps<{
   records: MoodRecord[];
   previewTorque?: number | null;
   reducedMotion?: boolean;
+  companion?: Companion;
+  plant?: Plant;
 }>();
 
-const traceNames: Record<MoodBand, string> = {
-  [MoodBand.VERY_LOW]: 'blue-rain',
-  [MoodBand.LOW]: 'mist',
-  [MoodBand.CALM]: 'aura',
-  [MoodBand.HAPPY]: 'gold-leaf',
-  [MoodBand.VERY_HAPPY]: 'flower',
+const plants = {
+  'leaf-tree': '/static/scene/leaf-tree.png',
+  'camellia-shrub': '/static/scene/camellia-shrub.png',
+};
+const companions = {
+  fawn: '/static/scene/fawn.png',
+  'tit-bird': '/static/scene/tit-bird.png',
+};
+const marks: Record<MoodBand, string> = {
+  [MoodBand.VERY_LOW]: 'drop',
+  [MoodBand.LOW]: 'dew',
+  [MoodBand.CALM]: 'light',
+  [MoodBand.HAPPY]: 'leaf',
+  [MoodBand.VERY_HAPPY]: 'bloom',
 };
 
-function stableSlot(id: string): number {
-  let hash = 0;
-  for (const character of id) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  return hash % 9;
+const bands = [MoodBand.VERY_LOW, MoodBand.LOW, MoodBand.CALM, MoodBand.HAPPY, MoodBand.VERY_HAPPY];
+const positions = [
+  { left: '26%', top: '34%' },
+  { left: '47%', top: '21%' },
+  { left: '68%', top: '32%' },
+  { left: '35%', top: '56%' },
+  { left: '61%', top: '55%' },
+];
+const traces = computed(() =>
+  bands.flatMap((band, index) => {
+    const count = props.records.filter((record) => record.moodBand === band).length;
+    return count ? [{ key: band, kind: marks[band], count, position: positions[index]! }] : [];
+  }),
+);
+const failedAssets = ref<string[]>([]);
+const plantSrc = computed(() => plants[props.plant || 'leaf-tree']);
+const companionSrc = computed(() => companions[props.companion || 'fawn']);
+const assetMessage = computed(() =>
+  failedAssets.value.length ? '插画暂时无法显示，仍可继续记录心情' : '',
+);
+
+function markAssetFailed(name: string): void {
+  if (!failedAssets.value.includes(name)) failedAssets.value = [...failedAssets.value, name];
 }
 
-const traces = computed(() => {
-  const grouped = new Map<MoodBand, MoodRecord[]>();
-  for (const record of props.records) {
-    grouped.set(record.moodBand, [...(grouped.get(record.moodBand) ?? []), record]);
-  }
-  return [...grouped].flatMap(([band, records]) => {
-    const slots = new Set(records.map((record) => stableSlot(record.id)));
-    return [...slots].map((slot) => ({
-      band,
-      slot,
-      key: `${band}-${slot}`,
-      count: records.length,
-    }));
-  });
+watch([plantSrc, companionSrc], () => {
+  failedAssets.value = failedAssets.value.filter((name) => name === 'landscape');
 });
-
-const previewBand = computed(() =>
-  props.previewTorque === null || props.previewTorque === undefined
-    ? null
-    : torqueToMoodBand(props.previewTorque),
+const previewKind = computed(() =>
+  props.previewTorque == null ? null : marks[torqueToMoodBand(props.previewTorque)],
 );
 </script>
 
 <template>
-  <view class="scene" :class="{ still: reducedMotion }" aria-label="今天的心情树">
-    <view class="night-glow" />
-    <view class="root-glow" />
-    <view class="tree-trunk" />
-    <view class="branch branch-left" />
-    <view class="branch branch-right" />
-    <view class="canopy canopy-left" />
-    <view class="canopy canopy-center" />
-    <view class="canopy canopy-right" />
+  <view class="scene" :class="{ still: reducedMotion }" aria-label="今天的心情植物">
+    <image
+      class="landscape"
+      src="/static/scene/meadow-sky.png"
+      mode="aspectFill"
+      @error="markAssetFailed('landscape')"
+    />
+    <view class="haze" />
+    <image
+      class="plant"
+      :class="{ shrub: plant === 'camellia-shrub' }"
+      :src="plantSrc"
+      mode="aspectFit"
+      @error="markAssetFailed('plant')"
+    />
     <view
       v-for="trace in traces"
       :key="trace.key"
       class="trace"
-      :class="traceNames[trace.band]"
-      :style="{
-        left: `${15 + (trace.slot % 3) * 29}%`,
-        top: `${16 + Math.floor(trace.slot / 3) * 19}%`,
-        opacity: Math.min(0.95, 0.45 + trace.count * 0.1),
-      }"
+      :class="trace.kind"
+      :style="trace.position"
+      ><text v-if="trace.count > 1" class="trace-count">{{ trace.count }}</text></view
+    >
+    <view v-if="previewKind" class="trace preview" :class="previewKind" />
+    <image
+      class="companion"
+      :src="companionSrc"
+      mode="aspectFit"
+      @error="markAssetFailed('companion')"
     />
-    <view v-if="previewBand" class="trace preview" :class="traceNames[previewBand]" />
-    <view class="ground" />
+    <view v-if="assetMessage" class="asset-message" role="status">{{ assetMessage }}</view>
+    <view class="scene-caption">{{
+      records.length ? `今天留下 ${records.length} 处心情痕迹` : '今天的心情，从这里开始'
+    }}</view>
   </view>
 </template>
 
 <style scoped>
 .scene {
-  height: 610rpx;
   position: relative;
+  height: 600rpx;
   overflow: hidden;
-  border-radius: 38rpx;
-  background: radial-gradient(ellipse at 50% 45%, #3c5c63 0%, #213c49 40%, #142a36 78%);
+  background: #a5c8ee;
   isolation: isolate;
 }
-.night-glow {
+.landscape {
   position: absolute;
-  inset: 6%;
-  border-radius: 50%;
-  background: radial-gradient(circle, #a4ddd32b, transparent 65%);
-  animation: breathe 5s infinite alternate;
-}
-.ground {
-  position: absolute;
+  width: 100%;
+  height: 100%;
   left: 0;
-  right: 0;
-  bottom: -30rpx;
-  height: 95rpx;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, #6e998d, #29464b 70%, transparent);
+  top: 0;
 }
-.root-glow {
+.haze {
   position: absolute;
-  bottom: 30rpx;
-  left: 33%;
-  width: 34%;
-  height: 80rpx;
-  border-radius: 50%;
-  background: #a6ebcf70;
-  filter: blur(20rpx);
+  inset: 0;
+  background: linear-gradient(180deg, #bde0f322, transparent 70%);
 }
-.tree-trunk {
+.plant {
   position: absolute;
-  left: 48%;
-  top: 41%;
-  width: 5%;
-  height: 52%;
-  border-radius: 60% 50% 12% 12%;
-  background: linear-gradient(90deg, #486061, #b0ab8e 55%, #526c64);
-  transform: rotate(-2deg);
-  box-shadow: 0 0 24rpx #b8d2b06a;
+  left: 18%;
+  top: 8%;
+  width: 64%;
+  height: 88%;
 }
-.branch {
+.plant.shrub {
+  left: 16%;
+  top: 15%;
+  width: 70%;
+  height: 75%;
+}
+.companion {
   position: absolute;
-  height: 5%;
-  width: 29%;
-  top: 52%;
-  border-top: 16rpx solid #879d87;
-  border-radius: 50%;
-}
-.branch-left {
-  right: 51%;
-  transform: rotate(25deg);
-}
-.branch-right {
-  left: 50%;
-  transform: rotate(-27deg);
-}
-.canopy {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 38%, #8ab8a789, #366b6d 60%, #27495e9c 84%);
-  box-shadow:
-    inset 0 0 42rpx #d7ebd183,
-    0 0 32rpx #91d6c58a;
-}
-.canopy-left {
-  width: 40%;
-  height: 43%;
-  left: 14%;
-  top: 20%;
-}
-.canopy-center {
-  width: 48%;
-  height: 48%;
-  left: 27%;
-  top: 10%;
-}
-.canopy-right {
-  width: 41%;
-  height: 43%;
-  right: 12%;
-  top: 21%;
+  right: 5%;
+  bottom: 5%;
+  width: 28%;
+  height: 30%;
 }
 .trace {
   position: absolute;
-  width: 70rpx;
-  height: 70rpx;
-  border-radius: 50%;
+  width: 28rpx;
+  height: 28rpx;
   z-index: 2;
-  animation: glimmer 2.8s infinite alternate;
+  box-shadow: 2rpx 5rpx 8rpx #284c3c44;
 }
-.blue-rain {
-  background: radial-gradient(circle, #cad4f9 8%, #647ed1a8 22%, transparent 69%);
-  box-shadow: 0 16rpx 21rpx #6d80c1aa;
+.trace-count {
+  position: absolute;
+  left: 20rpx;
+  top: -16rpx;
+  min-width: 28rpx;
+  padding: 1rpx 5rpx;
+  border-radius: 12rpx;
+  background: #f7fbf5;
+  color: #173f3c;
+  font-size: 19rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
 }
-.mist {
-  background: radial-gradient(circle, #a5c4f0a0, #819dce48, transparent 70%);
-  filter: blur(6rpx);
+.asset-message {
+  position: absolute;
+  z-index: 3;
+  right: 20rpx;
+  top: 20rpx;
+  max-width: 46%;
+  padding: 8rpx 12rpx;
+  border-radius: 6rpx;
+  background: #f7fbf5e8;
+  color: #173f3c;
+  font-size: 20rpx;
 }
-.aura {
-  background: radial-gradient(circle, #c7f0c4, #8ed7bb65, transparent 70%);
+.drop {
+  border-radius: 80% 5% 80% 80%;
+  background: #698fcb;
+  transform: rotate(-35deg);
 }
-.gold-leaf {
-  background: radial-gradient(ellipse, #ffe9a5, #eac46e93 30%, transparent 68%);
-  transform: rotate(30deg);
+.dew {
+  border-radius: 50%;
+  background: #b5e3e2;
+  border: 2rpx solid #ffffff88;
 }
-.flower {
-  background: radial-gradient(circle, #fff9d2 9%, #f7d69b 16%, #f9d6ac83 44%, transparent 70%);
-  box-shadow: 0 0 25rpx #f6dcae;
+.light {
+  border-radius: 50%;
+  background: #f6e6a9;
+}
+.leaf {
+  border-radius: 80% 4% 80% 4%;
+  background: #e7bc63;
+  transform: rotate(35deg);
+}
+.bloom {
+  border-radius: 50%;
+  background: #f4a9a7;
+  border: 5rpx solid #ffe2bd;
 }
 .preview {
-  left: 46%;
-  top: 25%;
-  width: 110rpx;
-  height: 110rpx;
-  opacity: 0.85;
+  left: 50%;
+  top: 26%;
+  width: 42rpx;
+  height: 42rpx;
+  opacity: 0.75;
+  animation: settle 2s ease-in-out infinite alternate;
 }
-.still *,
-.still {
-  animation: none !important;
+.scene-caption {
+  position: absolute;
+  left: 30rpx;
+  top: 22rpx;
+  color: #173d3b;
+  font-size: 23rpx;
+  font-weight: 600;
+  background: #f7fff0c9;
+  padding: 7rpx 14rpx;
+  border-radius: 6rpx;
 }
-@keyframes breathe {
+.still .preview {
+  animation: none;
+}
+@keyframes settle {
   from {
     opacity: 0.5;
   }
   to {
     opacity: 1;
-  }
-}
-@keyframes glimmer {
-  from {
-    opacity: 0.45;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 0.9;
-    transform: scale(1.1);
   }
 }
 </style>

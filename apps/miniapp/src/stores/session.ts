@@ -13,13 +13,20 @@ const storedSessionSchema = z.object({
 const storedSettingsSchema = z.object({
   vibrationEnabled: z.boolean().optional(),
   reducedMotion: z.boolean().optional(),
+  companion: z.enum(['fawn', 'tit-bird']).optional(),
+  plant: z.enum(['leaf-tree', 'camellia-shrub']).optional(),
 });
+
+export type Companion = 'fawn' | 'tit-bird';
+export type Plant = 'leaf-tree' | 'camellia-shrub';
 
 export const useSessionStore = defineStore('session', () => {
   const accessToken = ref('');
   const displayCode = ref('');
   const vibrationEnabled = ref(true);
   const reducedMotion = ref(false);
+  const companion = ref<Companion>('fawn');
+  const plant = ref<Plant>('leaf-tree');
 
   function restore(): void {
     const stored = storedSessionSchema.safeParse(uni.getStorageSync(SESSION_KEY)).data;
@@ -28,6 +35,8 @@ export const useSessionStore = defineStore('session', () => {
     const settings = storedSettingsSchema.safeParse(uni.getStorageSync(SETTINGS_KEY)).data;
     vibrationEnabled.value = settings?.vibrationEnabled ?? true;
     reducedMotion.value = settings?.reducedMotion ?? false;
+    companion.value = settings?.companion ?? 'fawn';
+    plant.value = settings?.plant ?? 'leaf-tree';
   }
 
   function setSession(token: string, code: string): void {
@@ -46,6 +55,8 @@ export const useSessionStore = defineStore('session', () => {
     uni.setStorageSync(SETTINGS_KEY, {
       vibrationEnabled: vibrationEnabled.value,
       reducedMotion: reducedMotion.value,
+      companion: companion.value,
+      plant: plant.value,
     });
   }
 
@@ -54,6 +65,8 @@ export const useSessionStore = defineStore('session', () => {
     displayCode,
     vibrationEnabled,
     reducedMotion,
+    companion,
+    plant,
     restore,
     setSession,
     clearSession,

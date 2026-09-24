@@ -9,8 +9,8 @@ onLaunch(() => {
 
 <style>
 page {
-  background: #11252c;
-  color: #ecf4e9;
+  background: #f7fbf5;
+  color: #173f3c;
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
 }
 
@@ -19,28 +19,40 @@ page {
 }
 
 .card {
-  border: 1rpx solid rgba(183, 240, 221, 0.22);
-  border-radius: 32rpx;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 8rpx;
+  background: #edf5ed;
   padding: 30rpx;
   margin: 24rpx 0;
 }
 
 .muted {
-  color: #a9c0bf;
+  color: #4d7069;
   font-size: 26rpx;
   line-height: 1.5;
 }
 
 .action {
-  color: #183534;
-  background: #c9eadb;
-  border-radius: 24rpx;
+  color: #ffffff;
+  background: #2f746e;
+  border-radius: 8rpx;
   font-weight: 600;
 }
 
 .danger {
-  color: #f6d4d6;
-  border-color: #9c7077;
+  color: #a24951;
+  border-color: #b8797e;
+}
+
+@media (min-width: 720px) {
+  .screen {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  uni-tabbar {
+    max-width: 560px;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
 }
 </style>

@@ -17,7 +17,7 @@ const points = computed(() =>
 </script>
 
 <template>
-  <view class="card">
+  <view class="timeline-section">
     <view class="title">今天 · 24 小时</view>
     <view class="timeline">
       <view class="line" />
@@ -33,15 +33,20 @@ const points = computed(() =>
       ><text>00:00</text><text>06:00</text><text>12:00</text><text>18:00</text
       ><text>24:00</text></view
     >
-    <view v-if="!records.length" class="muted empty">今天尚未记录，树会从此刻开始。</view>
-    <view v-else class="muted">点击光点，查看当时的心情。</view>
+    <view v-if="!records.length" class="muted empty">今天还没有记录。</view>
+    <view v-else class="muted">轻触圆点，查看当时的心情。</view>
   </view>
 </template>
 
 <style scoped>
+.timeline-section {
+  border-top: 1rpx solid #d5e3da;
+  padding: 30rpx 32rpx;
+}
 .title {
   font-size: 30rpx;
   font-weight: 600;
+  color: #173f3c;
 }
 .timeline {
   position: relative;
@@ -54,7 +59,7 @@ const points = computed(() =>
   left: 0;
   right: 0;
   height: 4rpx;
-  background: #81b9ab;
+  background: #8fb8a7;
   opacity: 0.65;
 }
 .point {
@@ -64,14 +69,13 @@ const points = computed(() =>
   height: 30rpx;
   margin-left: -15rpx;
   border-radius: 50%;
-  background: #eddbac;
-  border: 4rpx solid #456c70;
-  box-shadow: 0 0 16rpx #efdca5;
+  background: #e3a774;
+  border: 4rpx solid #f7fbf5;
 }
 .labels {
   display: flex;
   justify-content: space-between;
-  color: #a9c0bf;
+  color: #587973;
   font-size: 19rpx;
 }
 .empty {
