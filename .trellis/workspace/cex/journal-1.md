@@ -27,3 +27,25 @@ Redesigned the miniapp around a layered meadow scene with selectable animal and 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 2: Review insights + WeChat CSV sharing
+<!-- trellis-session: v=2 fp=5b85d7118c9bd1b7 -->
+
+**Date**: 2026-09-28
+**Task**: Review insights + WeChat CSV sharing
+**Branch**: `master`
+
+### Summary
+
+Added time-of-day and same-day-change weekly insights to ReviewService with unit tests; switched WeChat CSV export to shareFileMessage since CSV is not an openDocument-supported format; refresh calendar on every onShow; updated spec/design docs.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7613c31` | feat(review): enrich weekly insights and WeChat CSV sharing |
+
+### Status
+
+[OK] **Completed**
