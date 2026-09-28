@@ -19,11 +19,16 @@ describe('real SQLite mood flow', () => {
   let tokenA: string;
   let tokenB: string;
 
-  const create = (token: string, torque: number, id = randomUUID()) =>
+  const create = (
+    token: string,
+    torque: number,
+    id = randomUUID(),
+    occurredAt: string = new Date().toISOString(),
+  ) =>
     request(app.getHttpServer())
       .post('/v1/moods')
       .set('Authorization', `Bearer ${token}`)
-      .send({ torque, timezoneOffsetMinutes: -480, clientMutationId: id });
+      .send({ torque, occurredAt, timezoneOffsetMinutes: -480, clientMutationId: id });
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'development';

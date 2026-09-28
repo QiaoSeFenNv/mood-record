@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import {
   type CreateMoodRequest,
   type CreateMoodResponse,
@@ -36,6 +36,26 @@ export class MoodService {
 
   async create(user: CurrentUser, input: CreateMoodRequest): Promise<CreateMoodResponse> {
     const now = new Date();
+    // 客户端必须传发生时间（带时区偏移的 ISO 字符串）。仅允许不超过“当前 + 5 分钟”
+    // 且不早于一年前，以容纳轻微时钟漂移、同时拒绝明显篡改或穿越的提交。
+    const occurredAtUtc = new Date(input.occurredAt);
+    if (Number.isNaN(occurredAtUtc.getTime())) {
+      throw new BadRequestException({
+        code: 'INVALID_OCCURRED_AT',
+        message: '发生时间格式不正确，请重新滑动记录',
+      });
+    }
+    const maxFutureSkewMs = 5 * 60_000;
+    const maxPastSkewMs = 365 * 24 * 60 * 60_000;
+    if (
+      occurredAtUtc.getTime() > now.getTime() + maxFutureSkewMs ||
+      occurredAtUtc.getTime() < now.getTime() - maxPastSkewMs
+    ) {
+      throw new BadRequestException({
+        code: 'OCCURRED_AT_OUT_OF_RANGE',
+        message: '发生时间距离现在过远，请使用当前时间记录',
+      });
+    }
     const moodBand = torqueToMoodBand(input.torque);
     const result = await this.repository.createIdempotently(
       user.id,
@@ -43,7 +63,7 @@ export class MoodService {
       moodBand,
       input.timezoneOffsetMinutes,
       input.clientMutationId,
-      now,
+      occurredAtUtc,
     );
     if (result.state === 'REVERSED') {
       throw new ConflictException({

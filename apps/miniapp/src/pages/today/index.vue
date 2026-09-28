@@ -112,6 +112,7 @@ async function retry(): Promise<void> {
   try {
     const result = await api.createMood({
       torque: pending.value.torque,
+      occurredAt: new Date().toISOString(),
       timezoneOffsetMinutes: timezoneOffset(),
       clientMutationId: pending.value.clientMutationId,
     });
