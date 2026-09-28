@@ -49,3 +49,25 @@ Added time-of-day and same-day-change weekly insights to ReviewService with unit
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: Persist real record time (occurredAt) + H5 preview running
+<!-- trellis-session: v=2 fp=d7564782197be0f9 -->
+
+**Date**: 2026-09-28
+**Task**: Persist real record time (occurredAt) + H5 preview running
+**Branch**: `master`
+
+### Summary
+
+Added occurredAt to CreateMoodRequest contract; MoodService.create now stores client-supplied time instead of server-side new Date(). Frontend submits current local ISO time. Added 5min/1yr skew guards. Verified E2E with offset -480: 03:15+08:00 → 凌晨 insight, 12:00+08:00 → 下午. H5 dev server running on http://127.0.0.1:5174 proxying to API at :3000. Cleared preview-user-a records via DELETE /v1/me/moods.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2ebe6f8` | fix(api): accept client-supplied occurredAt and persist real record time |
+
+### Status
+
+[OK] **Completed**
