@@ -2,31 +2,31 @@
 name: 心情晴雨表小程序
 description: 在日光草地上记录、回看和理解当下心情
 colors:
-  meadow-paper: "#f7fbf5"
-  deep-fern: "#173f3c"
-  calm-teal: "#2f746e"
-  soft-moss: "#edf5ed"
-  muted-teal: "#4d7069"
-  warm-coral: "#a24951"
+  meadow-paper: '#f7fbf5'
+  deep-fern: '#173f3c'
+  calm-teal: '#2f746e'
+  soft-moss: '#edf5ed'
+  muted-teal: '#4d7069'
+  warm-coral: '#a24951'
 rounded:
-  sm: "6px"
-  md: "8px"
+  sm: '6px'
+  md: '8px'
 spacing:
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
+  sm: '8px'
+  md: '16px'
+  lg: '24px'
 components:
   button-primary:
-    backgroundColor: "{colors.calm-teal}"
-    textColor: "#ffffff"
-    rounded: "{rounded.md}"
-    padding: "0 16px"
-    height: "41px"
+    backgroundColor: '{colors.calm-teal}'
+    textColor: '#ffffff'
+    rounded: '{rounded.md}'
+    padding: '0 16px'
+    height: '41px'
   surface-soft:
-    backgroundColor: "{colors.soft-moss}"
-    textColor: "{colors.deep-fern}"
-    rounded: "{rounded.md}"
-    padding: "16px"
+    backgroundColor: '{colors.soft-moss}'
+    textColor: '{colors.deep-fern}'
+    rounded: '{rounded.md}'
+    padding: '16px'
 ---
 
 # Design System: 心情晴雨表小程序

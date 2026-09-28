@@ -10,19 +10,21 @@ const session = useSessionStore();
 const weekly = ref<WeeklyResponse | null>(null);
 const calendar = ref<CalendarResponse | null>(null);
 const errorMessage = ref('');
-const today = new Date();
+const today = ref(new Date());
 const monthLabel = computed(
   () =>
-    `${calendar.value?.year ?? today.getFullYear()} 年 ${calendar.value?.month ?? today.getMonth() + 1} 月`,
+    `${calendar.value?.year ?? today.value.getFullYear()} 年 ${calendar.value?.month ?? today.value.getMonth() + 1} 月`,
 );
 
 async function refresh(): Promise<void> {
   if (!session.accessToken) return;
+  const currentDate = new Date();
+  today.value = currentDate;
   try {
-    const offset = new Date().getTimezoneOffset();
+    const offset = currentDate.getTimezoneOffset();
     [weekly.value, calendar.value] = await Promise.all([
       api.weekly(offset),
-      api.calendar(today.getFullYear(), today.getMonth() + 1, offset),
+      api.calendar(currentDate.getFullYear(), currentDate.getMonth() + 1, offset),
     ]);
     errorMessage.value = '';
   } catch (error) {

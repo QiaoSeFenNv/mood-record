@@ -5,6 +5,39 @@ import { formatLocalDateKey, previousLocalDayWindows, type UtcWindow } from '@mo
 import type { MoodRecordEntity } from '../database/entities/mood-record.entity.js';
 import { MoodRepository } from '../repositories/mood.repository.js';
 
+const DAY_PERIODS = [
+  { label: '凌晨', startHour: 0 },
+  { label: '上午', startHour: 6 },
+  { label: '下午', startHour: 12 },
+  { label: '晚上', startHour: 18 },
+] as const;
+
+function localHour(record: MoodRecordEntity): number {
+  return new Date(
+    record.occurredAtUtc.getTime() - record.timezoneOffsetMinutes * 60_000,
+  ).getUTCHours();
+}
+
+function periodForRecord(record: MoodRecordEntity): string {
+  const period = [...DAY_PERIODS].reverse().find(({ startHour }) => localHour(record) >= startHour);
+  return period?.label ?? DAY_PERIODS[0].label;
+}
+
+function mostCommonPeriod(records: readonly MoodRecordEntity[]): string | null {
+  if (!records.length) return null;
+  const counts = new Map<string, number>();
+  for (const period of DAY_PERIODS) counts.set(period.label, 0);
+  for (const record of records) {
+    const period = periodForRecord(record);
+    counts.set(period, (counts.get(period) ?? 0) + 1);
+  }
+  let winner: string = DAY_PERIODS[0].label;
+  for (const period of DAY_PERIODS.slice(1)) {
+    if ((counts.get(period.label) ?? 0) > (counts.get(winner) ?? 0)) winner = period.label;
+  }
+  return winner;
+}
+
 @Injectable()
 export class ReviewService {
   constructor(@Inject(MoodRepository) private readonly repository: MoodRepository) {}
@@ -22,10 +55,13 @@ export class ReviewService {
       startUtc: windows[0]!.startUtc,
       endUtc: windows[6]!.endUtc,
     });
-    const days = windows.map((window) => {
-      const records = all.filter(
+    const recordsByDay = windows.map((window) =>
+      all.filter(
         (record) => record.occurredAtUtc >= window.startUtc && record.occurredAtUtc < window.endUtc,
-      );
+      ),
+    );
+    const days = windows.map((window, index) => {
+      const records = recordsByDay[index]!;
       return {
         date: formatLocalDateKey(window.startUtc, timezoneOffsetMinutes),
         recordCount: records.length,
@@ -40,7 +76,24 @@ export class ReviewService {
     const insights = total
       ? [`过去 7 天记录了 ${total} 次，分布在 ${activeDays} 天。`]
       : ['过去 7 天还没有记录，想记的时候再来就好。'];
-    if (total >= 2) {
+
+    const lowerPeriod = mostCommonPeriod(all.filter((record) => record.torque <= -21));
+    if (lowerPeriod) insights.push(`较低扭矩记录较多出现在${lowerPeriod}。`);
+    const brighterPeriod = mostCommonPeriod(all.filter((record) => record.torque >= 21));
+    if (brighterPeriod) insights.push(`较高扭矩记录较多出现在${brighterPeriod}。`);
+
+    const sameDayRecords = recordsByDay.find((records) => records.length >= 2);
+    if (sameDayRecords) {
+      const first = sameDayRecords[0]!;
+      const last = sameDayRecords[sameDayRecords.length - 1]!;
+      const difference = last.torque - first.torque;
+      if (difference !== 0) {
+        const date = formatLocalDateKey(first.occurredAtUtc, first.timezoneOffsetMinutes);
+        insights.push(
+          `${date} 内，最后一次记录的扭矩比第一次${difference > 0 ? '上升' : '下降'}了 ${Math.abs(difference)}。`,
+        );
+      }
+    } else if (total >= 2) {
       const first = all[0]!;
       const last = all[all.length - 1]!;
       const difference = last.torque - first.torque;

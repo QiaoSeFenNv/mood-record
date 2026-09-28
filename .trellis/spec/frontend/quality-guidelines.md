@@ -124,7 +124,7 @@ vitest run --config vitest.config.ts
 
 - `apps/miniapp/index.html` is the H5 entry and loads `src/main.ts`; both targets use the same uni-app pages and shared API client.
 - During H5 development, the API client defaults to same-origin `/v1`; `apps/miniapp/vite.config.ts` proxies it to `http://127.0.0.1:3000`. This supports the default `5173` and custom local preview ports such as `62613` without widening the API CORS list. `VITE_API_BASE_URL` remains an explicit override. WeChat builds retain the direct `http://127.0.0.1:3000/v1` development default; never expose development identity publicly.
-- Browser CSV export uses a Blob download; the Mini Program retains `uni.downloadFile` and `uni.openDocument`.
+- Browser CSV export uses a Blob download; the Mini Program downloads the CSV and uses `uni.shareFileMessage` because `uni.openDocument` only supports document formats such as doc, xls, ppt, and pdf, not CSV.
 
 ### 4. Validation & Error Matrix
 

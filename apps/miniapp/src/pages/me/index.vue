@@ -33,6 +33,31 @@ function setPlant(value: 'leaf-tree' | 'camellia-shrub'): void {
   session.saveSettings();
 }
 
+/** 微信端不支持直接预览 CSV，因此将下载到的临时文件交给文件分享能力。 */
+function shareCsvFile(filePath: string): Promise<void> {
+  const shareFileMessage = (
+    uni as unknown as {
+      shareFileMessage?: (options: {
+        filePath: string;
+        fileName: string;
+        success?: () => void;
+        fail?: (error: { errMsg?: string }) => void;
+      }) => void;
+    }
+  ).shareFileMessage;
+  if (!shareFileMessage) {
+    return Promise.reject(new Error('当前平台暂不支持分享 CSV，请改用浏览器下载'));
+  }
+  return new Promise((resolve, reject) => {
+    shareFileMessage.call(uni, {
+      filePath,
+      fileName: 'mood-records.csv',
+      success: resolve,
+      fail: (error) => reject(new Error(error.errMsg || 'CSV 分享未完成，请稍后重试')),
+    });
+  });
+}
+
 async function exportCsv(): Promise<void> {
   if (!session.accessToken || busy.value) return;
   busy.value = true;
@@ -57,8 +82,8 @@ async function exportCsv(): Promise<void> {
         header: { Authorization: `Bearer ${session.accessToken}` },
       });
       if (result.statusCode !== 200) throw new Error('导出未完成，请稍后重试');
-      await uni.openDocument({ filePath: result.tempFilePath, showMenu: true });
-      message.value = '已生成 CSV，可在预览中保存或分享。';
+      await shareCsvFile(result.tempFilePath);
+      message.value = 'CSV 已准备好，可在聊天中保存或转发。';
     }
   } catch (error) {
     message.value = error instanceof Error ? error.message : '导出未完成';
