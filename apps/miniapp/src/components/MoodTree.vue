@@ -12,14 +12,6 @@ const props = defineProps<{
   plant?: Plant;
 }>();
 
-const plants = {
-  'leaf-tree': '/static/scene/leaf-tree.png',
-  'camellia-shrub': '/static/scene/camellia-shrub.png',
-};
-const companions = {
-  fawn: '/static/scene/fawn.png',
-  'tit-bird': '/static/scene/tit-bird.png',
-};
 const marks: Record<MoodBand, string> = {
   [MoodBand.VERY_LOW]: 'drop',
   [MoodBand.LOW]: 'dew',
@@ -43,8 +35,9 @@ const traces = computed(() =>
   }),
 );
 const failedAssets = ref<string[]>([]);
-const plantSrc = computed(() => plants[props.plant || 'leaf-tree']);
-const companionSrc = computed(() => companions[props.companion || 'fawn']);
+const sceneSrc = computed(
+  () => `/static/scene/meadow-${props.plant || 'leaf-tree'}-${props.companion || 'fawn'}.png`,
+);
 const assetMessage = computed(() =>
   failedAssets.value.length ? '插画暂时无法显示，仍可继续记录心情' : '',
 );
@@ -53,8 +46,8 @@ function markAssetFailed(name: string): void {
   if (!failedAssets.value.includes(name)) failedAssets.value = [...failedAssets.value, name];
 }
 
-watch([plantSrc, companionSrc], () => {
-  failedAssets.value = failedAssets.value.filter((name) => name === 'landscape');
+watch(sceneSrc, () => {
+  failedAssets.value = [];
 });
 const previewKind = computed(() =>
   props.previewTorque == null ? null : marks[torqueToMoodBand(props.previewTorque)],
@@ -63,20 +56,7 @@ const previewKind = computed(() =>
 
 <template>
   <view class="scene" :class="{ still: reducedMotion }" aria-label="今天的心情植物">
-    <image
-      class="landscape"
-      src="/static/scene/meadow-sky.png"
-      mode="aspectFill"
-      @error="markAssetFailed('landscape')"
-    />
-    <view class="haze" />
-    <image
-      class="plant"
-      :class="{ shrub: plant === 'camellia-shrub' }"
-      :src="plantSrc"
-      mode="aspectFit"
-      @error="markAssetFailed('plant')"
-    />
+    <image class="landscape" :src="sceneSrc" mode="aspectFill" @error="markAssetFailed('scene')" />
     <view
       v-for="trace in traces"
       :key="trace.key"
@@ -86,12 +66,7 @@ const previewKind = computed(() =>
       ><text v-if="trace.count > 1" class="trace-count">{{ trace.count }}</text></view
     >
     <view v-if="previewKind" class="trace preview" :class="previewKind" />
-    <image
-      class="companion"
-      :src="companionSrc"
-      mode="aspectFit"
-      @error="markAssetFailed('companion')"
-    />
+    <view class="scene-wash" />
     <view v-if="assetMessage" class="asset-message" role="status">{{ assetMessage }}</view>
     <view class="scene-caption">{{
       records.length ? `今天留下 ${records.length} 处心情痕迹` : '今天的心情，从这里开始'
@@ -104,7 +79,7 @@ const previewKind = computed(() =>
   position: relative;
   height: 600rpx;
   overflow: hidden;
-  background: #a5c8ee;
+  background: #edf5ed;
   isolation: isolate;
 }
 .landscape {
@@ -114,37 +89,21 @@ const previewKind = computed(() =>
   left: 0;
   top: 0;
 }
-.haze {
+.scene-wash {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #bde0f322, transparent 70%);
-}
-.plant {
-  position: absolute;
-  left: 18%;
-  top: 8%;
-  width: 64%;
-  height: 88%;
-}
-.plant.shrub {
-  left: 16%;
-  top: 15%;
-  width: 70%;
-  height: 75%;
-}
-.companion {
-  position: absolute;
-  right: 5%;
-  bottom: 5%;
-  width: 28%;
-  height: 30%;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 54rpx;
+  background: linear-gradient(180deg, transparent, #f7fbf5);
 }
 .trace {
   position: absolute;
   width: 28rpx;
   height: 28rpx;
   z-index: 2;
-  box-shadow: 2rpx 5rpx 8rpx #284c3c44;
+  opacity: 0.92;
 }
 .trace-count {
   position: absolute;
@@ -206,14 +165,13 @@ const previewKind = computed(() =>
 }
 .scene-caption {
   position: absolute;
-  left: 30rpx;
-  top: 22rpx;
+  z-index: 3;
+  left: 32rpx;
+  top: 30rpx;
   color: #173d3b;
-  font-size: 23rpx;
-  font-weight: 600;
-  background: #f7fff0c9;
-  padding: 7rpx 14rpx;
-  border-radius: 6rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  text-shadow: 0 1rpx 12rpx #f7fbf5;
 }
 .still .preview {
   animation: none;
@@ -224,6 +182,11 @@ const previewKind = computed(() =>
   }
   to {
     opacity: 1;
+  }
+}
+@media (min-width: 720px) {
+  .scene {
+    height: 448px;
   }
 }
 </style>

@@ -104,30 +104,30 @@ function discard(): void {
 
 <style scoped>
 .torque {
-  padding: 24rpx 32rpx 32rpx;
+  padding: 14rpx 32rpx 34rpx;
   background: #f7fbf5;
 }
 .torque-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12rpx;
-  flex-wrap: wrap;
+  min-height: 88rpx;
 }
 .torque-title {
-  font-size: 31rpx;
-  font-weight: 700;
-  color: #173f3c;
+  display: block;
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #4d7069;
 }
 .torque-value {
-  color: #336967;
-  font-size: 27rpx;
+  display: block;
+  margin-top: 6rpx;
+  color: #173f3c;
+  font-size: 33rpx;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .track {
   position: relative;
   height: 65rpx;
-  margin: 18rpx -12rpx 0;
+  margin: 8rpx -12rpx 0;
 }
 .slider {
   margin: 0;
@@ -142,7 +142,7 @@ function discard(): void {
 .actions {
   display: flex;
   gap: 14rpx;
-  margin-top: 22rpx;
+  margin-top: 26rpx;
 }
 .actions button {
   margin: 0;

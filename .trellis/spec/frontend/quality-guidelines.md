@@ -157,9 +157,11 @@ Browser build passed, so WeChat acceptance is complete.
 Browser preview passed; run a separate mp-weixin build and device acceptance before release.
 ```
 
-## Scenario: Layered mood scene under repeated records and asset errors
+## Scenario: Composed mood scene under repeated records and asset errors
 
 - Derive the five visible mood marks from the current `MoodRecord[]` by `moodBand`. Show the exact count on a mark when a band has more than one record, so repeated records remain legible without occupying the same coordinates.
 - On deletion or day refresh, recompute these counts from the returned records. A preview mark is separate and must not increase a saved count.
-- Handle `image` load errors for the background, plant, and companion. Keep the recording control functional, retain the scene's base color, and show a short status message so a broken asset path is diagnosable.
-- Test a many-record same-band case and an image error event in `MoodTree.test.ts`; verify the WeChat build separately because jsdom does not exercise native image loading.
+- Select one `meadow-{plant}-{companion}.png` scene from the two persisted plant and two companion choices. The four scenes are built from existing originals with `apps/miniapp/scripts/build-scenes.py`; sources and transform are documented in `apps/miniapp/scripts/README.md`.
+- Keep the scene at `600rpx` on the miniapp so its picture remains close to the 5:4 asset ratio. At H5 widths of at least 720px, use a 448px scene height within the 560px page width; otherwise `aspectFill` cuts off the tree canopy.
+- Handle the composed `image` load error. Keep the recording control functional, retain the scene's base color, and show a short status message so a broken asset path is diagnosable.
+- Test a many-record same-band case, a scene switch and an image error event in `MoodTree.test.ts`; verify the WeChat build separately because jsdom does not exercise native image loading.

@@ -164,8 +164,11 @@ function openDevLogin(): void {
 <template>
   <view class="screen">
     <view class="heading-row">
-      <view class="date-label">{{ todayLabel }}</view>
-      <view class="test-pill">测试环境 · {{ session.displayCode || '未登录' }}</view>
+      <view class="page-title">今天的心情</view>
+      <view class="heading-meta">
+        <view class="date-label">{{ todayLabel }}</view>
+        <view class="test-pill">测试环境 · {{ session.displayCode || '未登录' }}</view>
+      </view>
     </view>
 
     <template v-if="hasSession">
@@ -208,20 +211,29 @@ function openDevLogin(): void {
 
 <style scoped>
 .heading-row {
+  padding: 28rpx 32rpx 24rpx;
+  background: #f7fbf5;
+}
+.page-title {
+  color: #173f3c;
+  font-size: 43rpx;
+  font-weight: 700;
+  letter-spacing: -1rpx;
+  line-height: 1.25;
+}
+.heading-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20rpx;
-  padding: 26rpx 32rpx 18rpx;
+  margin-top: 10rpx;
 }
 .date-label {
-  font-size: 29rpx;
-  font-weight: 700;
-  color: #173f3c;
+  font-size: 23rpx;
+  color: #4d7069;
 }
 .test-pill {
-  display: inline-block;
-  color: #436b64;
+  color: #4d7069;
   font-size: 20rpx;
   text-align: right;
 }

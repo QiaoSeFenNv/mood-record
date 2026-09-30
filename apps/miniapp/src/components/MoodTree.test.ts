@@ -67,7 +67,17 @@ describe('MoodTree', () => {
     expect(wrapper.findAll('.trace:not(.preview)')).toHaveLength(1);
     expect(wrapper.find('.trace-count').text()).toBe('12');
 
-    await wrapper.find('.plant').trigger('error');
+    await wrapper.find('.landscape').trigger('error');
     expect(wrapper.find('[role="status"]').text()).toContain('插画暂时无法显示');
+  });
+
+  it('switches the composed scene with local appearance choices', async () => {
+    const wrapper = mount(MoodTree, { props: { records: [] } });
+    expect(wrapper.find('.landscape').attributes('src')).toContain('meadow-leaf-tree-fawn.png');
+
+    await wrapper.setProps({ plant: 'camellia-shrub', companion: 'tit-bird' });
+    expect(wrapper.find('.landscape').attributes('src')).toContain(
+      'meadow-camellia-shrub-tit-bird.png',
+    );
   });
 });
